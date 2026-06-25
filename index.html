@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora Minimalista</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f0f2f5;
+        }
+
+        .container {
+            text-align: center;
+        }
+
+        .subtitle {
+            color: #333;
+            font-size: 1.1rem;
+            margin-bottom: 25px;
+            font-weight: 500;
+        }
+
+        /* Estrutura da Calculadora */
+        .calculator {
+            width: 320px;
+            height: 600px;
+            background-color: #0b0b26;
+            border-radius: 30px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Tela de Exibição */
+        .display {
+            text-align: right;
+            padding: 40px 10px 10px 10px;
+            min-height: 150px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            word-wrap: break-word;
+            word-break: break-all;
+        }
+
+        .expression {
+            color: #ffffff;
+            font-size: 2rem;
+            margin-bottom: 10px;
+            min-height: 2.5rem;
+        }
+
+        .result {
+            color: #7a7a9a;
+            font-size: 1.4rem;
+            min-height: 1.8rem;
+        }
+
+        /* Grade de Botões */
+        .buttons-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin-bottom: 10px;
+        }
+
+        button {
+            border: none;
+            outline: none;
+            height: 60px;
+            width: 60px;
+            border-radius: 50%;
+            font-size: 1.3rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: opacity 0.1s ease;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: auto;
+        }
+
+        button:active {
+            opacity: 0.7;
+        }
+
+        /* Cores dos Botões baseadas na imagem */
+        .btn-number {
+            background-color: #18183d;
+            color: #ffffff;
+        }
+
+        .btn-operator {
+            background-color: #23235b;
+            color: #7b7bfa;
+        }
+
+        .btn-ac {
+            background-color: #7b96fa;
+            color: #0b0b26;
+            font-weight: bold;
+        }
+
+        .btn-equals {
+            background-color: #ffa1c9;
+            color: #0b0b26;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="subtitle">See instant results as you type</div>
+        
+        <div class="calculator">
+            <div class="display">
+                <div class="expression" id="expression"></div>
+                <div class="result" id="result">0</div>
+            </div>
+
+            <div class="buttons-grid">
+                <button class="btn-ac" onclick="clearAll()">AC</button>
+                <button class="btn-operator" onclick="insertParenthesis()">()</button>
+                <button class="btn-operator" onclick="appendValue('%')">%</button>
+                <button class="btn-operator" onclick="appendValue('/')">÷</button>
+
+                <button class="btn-number" onclick="appendValue('7')">7</button>
+                <button class="btn-number" onclick="appendValue('8')">8</button>
+                <button class="btn-number" onclick="appendValue('9')">9</button>
+                <button class="btn-operator" onclick="appendValue('*')">×</button>
+
+                <button class="btn-number" onclick="appendValue('4')">4</button>
+                <button class="btn-number" onclick="appendValue('5')">5</button>
+                <button class="btn-number" onclick="appendValue('6')">6</button>
+                <button class="btn-operator" onclick="appendValue('-')">-</button>
+
+                <button class="btn-number" onclick="appendValue('1')">1</button>
+                <button class="btn-number" onclick="appendValue('2')">2</button>
+                <button class="btn-number" onclick="appendValue('3')">3</button>
+                <button class="btn-operator" onclick="appendValue('+')">+</button>
+
+                <button class="btn-number" onclick="appendValue('0')">0</button>
+                <button class="btn-number" onclick="appendValue('.')">.</button>
+                <button class="btn-number" onclick="backspace()">⌫</button>
+                <button class="btn-equals" onclick="calculateFinal()">=</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const expressionScreen = document.getElementById('expression');
+        const resultScreen = document.getElementById('result');
+        let currentExpression = '';
+
+        // Adiciona números e operadores à tela
+        function appendValue(value) {
+            currentExpression += value;
+            updateDisplay();
+            instantCalculate();
+        }
+
+        // Limpa tudo (Botão AC)
+        function clearAll() {
+            currentExpression = '';
+            expressionScreen.innerText = '';
+            resultScreen.innerText = '0';
+        }
+
+        // Apaga o último caractere (Botão de Backspace)
+        function backspace() {
+            currentExpression = currentExpression.slice(0, -1);
+            updateDisplay();
+            instantCalculate();
+        }
+
+        // Lógica inteligente para alternar entre parênteses '(' e ')'
+        function insertParenthesis() {
+            const lastChar = currentExpression.slice(-1);
+            const openCount = (currentExpression.match(/\(/g) || []).length;
+            const closeCount = (currentExpression.match(/\)/g) || []).length;
+
+            if (currentExpression === '' || ['+', '-', '*', '/', '('].includes(lastChar)) {
+                currentExpression += '(';
+            } else if (openCount > closeCount && lastChar !== '(') {
+                currentExpression += ')';
+            } else {
+                currentExpression += '*(';
+            }
+            updateDisplay();
+            instantCalculate();
+        }
+
+        // Atualiza o texto da expressão visualmente
+        function updateDisplay() {
+            // Substitui os operadores internos por símbolos visuais mais bonitos
+            let formatted = currentExpression
+                .replace(/\*/g, '×')
+                .replace(/\//g, '÷');
+            expressionScreen.innerText = formatted;
+        }
+
+        // Cálculo instantâneo ao digitar (conforme o topo do app diz)
+        function instantCalculate() {
+            if (currentExpression === '') {
+                resultScreen.innerText = '0';
+                return;
+            }
+
+            try {
+                // Substitui a porcentagem para um formato que o JS entenda (ex: 5% vira /100)
+                let sanitizedExpression = currentExpression.replace(/%/g, '/100');
+                
+                // Avalia a expressão de forma segura para o cálculo instantâneo
+                let evalResult = eval(sanitizedExpression);
+                
+                if (evalResult !== undefined && !isNaN(evalResult)) {
+                    resultScreen.innerText = evalResult;
+                }
+            } catch (error) {
+                // Não mostra erro durante a digitação para manter o visual limpo
+            }
+        }
+
+        // Quando clica no botão de igual (=), o resultado vira a expressão principal
+        function calculateFinal() {
+            if (resultScreen.innerText !== '' && resultScreen.innerText !== '0') {
+                currentExpression = resultScreen.innerText;
+                expressionScreen.innerText = currentExpression;
+                resultScreen.innerText = '';
+            }
+        }
+    </script>
+</body>
+</html>
